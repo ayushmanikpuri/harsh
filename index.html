@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ananya – Birthday Surprise</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Parisienne&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --pink:#ff4fa0;
+  --purple:#b48bff;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:Poppins, sans-serif;
+  background:linear-gradient(180deg,#0d0719,#15092d);
+  color:#fff;
+  height:100vh;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* START SCREEN */
+.start{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  gap:20px;
+  padding:20px;
+  text-align:center;
+  background:rgba(0,0,0,0.45);
+  backdrop-filter:blur(6px);
+}
+
+.startMsg{
+  font-size:26px;
+  font-weight:600;
+  background:linear-gradient(90deg,var(--pink),var(--purple));
+  -webkit-background-clip:text;
+  color:transparent;
+}
+
+/* SLIDER AREA */
+.slider{
+  position:absolute;
+  inset:0;
+  display:none;
+}
+
+.slide{
+  position:absolute;
+  inset:0;
+  opacity:0;
+  transition:opacity 1s ease;
+}
+
+.slide img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.slide.active{
+  opacity:1;
+}
+
+/* CAPTION */
+.caption{
+  position:absolute;
+  bottom:30px;
+  left:50%;
+  transform:translateX(-50%);
+  backdrop-filter:blur(6px);
+  background:rgba(0,0,0,0.35);
+  padding:16px 20px;
+  border-radius:14px;
+  text-align:center;
+  width:90%;
+  max-width:340px;
+}
+
+.caption h2{
+  font-family:Parisienne,cursive;
+  font-size:38px;
+}
+
+.caption p{
+  margin-top:6px;
+  font-size:14px;
+  opacity:0.9;
+}
+
+/* CONFETTI CANVAS */
+#confetti{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+}
+</style>
+</head>
+<body>
+
+<div class="start" id="startScreen">
+  <div class="startMsg" id="msgBox">Tap to begin the magic ✨</div>
+</div>
+
+<div class="slider" id="slider">
+  <div class="slide active"><img src="photo1.jpg"></div>
+  <div class="slide"><img src="photo2.jpg"></div>
+  <div class="slide"><img src="photo3.jpg"></div>
+  <div class="slide"><img src="photo4.jpg"></div>
+  <div class="slide"><img src="photo5.jpg"></div>
+  <div class="slide"><img src="photo6.jpg"></div>
+
+  <div class="caption">
+    <h2>Ananya</h2>
+    <p>
+      Ananya, you are a little bit of magic in a world that often forgets to sparkle.
+      Thank you for being a light, a warmth, and a beautiful reason to smile.
+      May your birthday shine brighter than every star in the sky ✨💗
+    </p>
+  </div>
+</div>
+
+<audio id="bgMusic" src="audio.mp3" loop></audio>
+<canvas id="confetti"></canvas>
+
+<script>
+// RANDOM start messages
+const msgs = [
+  "Tap to begin the magic ✨",
+  "Touch anywhere to start 🎶✨",
+  "Open the surprise 💗 Tap once",
+  "Just tap once ✨"
+];
+document.getElementById("msgBox").innerText = msgs[Math.floor(Math.random()*msgs.length)];
+
+// Elements
+const startScreen = document.getElementById("startScreen");
+const slider = document.getElementById("slider");
+const music = document.getElementById("bgMusic");
+const slides = document.querySelectorAll(".slide");
+
+// START on TAP
+document.body.addEventListener("click", startExperience, {once:true});
+
+function startExperience(){
+  startScreen.style.display="none";
+  slider.style.display="block";
+  music.play().catch(()=>{});
+  burst();
+}
+
+// SLIDES
+let index=0;
+setInterval(()=>{
+  slides[index].classList.remove("active");
+  index = (index+1)%slides.length;
+  slides[index].classList.add("active");
+},3500);
+
+// CONFETTI
+const c = document.getElementById("confetti");
+const ctx = c.getContext("2d");
+function size(){c.width=innerWidth;c.height=innerHeight;}
+size(); addEventListener("resize",size);
+
+let parts=[];
+function burst(){
+  for(let i=0;i<40;i++){
+    parts.push({
+      x:innerWidth/2,
+      y:innerHeight/2,
+      r:4+Math.random()*6,
+      vx:(Math.random()-0.5)*6,
+      vy:(Math.random()-0.5)*6,
+      life:80,
+      col:`hsl(${280+Math.random()*60},100%,70%)`
+    });
+  }
+  animate();
+}
+
+function animate(){
+  ctx.clearRect(0,0,c.width,c.height);
+  parts.forEach((p,i)=>{
+    p.x+=p.vx;
+    p.y+=p.vy;
+    p.vy+=0.15;
+    p.life--;
+
+    ctx.globalAlpha=p.life/80;
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fillStyle=p.col;
+    ctx.fill();
+
+    if(p.life<=0) parts.splice(i,1);
+  });
+  if(parts.length>0) requestAnimationFrame(animate);
+}
+</script>
+</body>
+</html>
